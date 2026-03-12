@@ -22,8 +22,6 @@ proc update*(state: var TUIState) =
     if elem.y < 0:
       continue
 
-    for i in 0 .. terminalWidth():
-      state.tb.write(i, elem.y, " ")
     elem.render(state.tb)  
 
 method handleInput*(self: FocusableElement, key: Key): bool {.base.} =
@@ -81,7 +79,7 @@ proc scrollDown*(state: var TUIState): bool =
   if state.elements.len != 0: 
     for element in state.elements:
       element.y -= 1
-      state.update()
+    state.update()
     return true
   return false
 

@@ -1,9 +1,9 @@
 import illwill
-import os
 
 import ./tui/tui
 import ./tui/pages/login
 import ./tui/pages/mainpage
+import ./bsky/bsky
 
 type 
   Pages = enum 
@@ -32,8 +32,7 @@ when isMainModule:
   var openingPage: Pages = login
   var currentPage*: Pages = openingPage
 
-  const envFilePath = "src/bsky/.env" 
-  if fileExists(envFilePath):
+  if hasBskyCreds():
     currentPage = mainpage
 
   case currentPage

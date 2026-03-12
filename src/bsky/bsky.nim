@@ -4,7 +4,18 @@ import httpclient, json
 import times
 import dotenv
 
-load()
+proc hasBskyCreds*(): bool =
+  let envPts = [".env", "src/bsky/.env", "bsky/.env"]
+  for envPath in envPts:
+    if fileExists(envPath):
+      let envDir = parentDir(envPath)
+      let envFile = extractFilename(envPath)
+      load(if envDir.len == 0: "." else: envDir, envFile)
+      break
+
+  let handle = getEnv("BLUESKY_HANDLE", "")
+  let appPassword = getEnv("APP_PASSWORD", "")
+  result = handle.len > 0 and appPassword.len > 0
 
 type
   Config* = object
@@ -19,13 +30,12 @@ type
 
 # Initialize client
 proc initBlueskyClient*(): BlueskyClient =
-  # Get required environment variables
+  if not hasBskyCreds():
+    quit("[ERROR]: BLUESKY_HANDLE or APP_PASSWORD is missing from .env file", 1)
+
   let pdsHost = getEnv("PDSHOST", "https://bsky.social")
   let handle = getEnv("BLUESKY_HANDLE", "")
   let appPassword = getEnv("APP_PASSWORD", "")
-  if handle == "" or appPassword == "":
-    quit("[ERROR]: BLUESKY_HANDLE or APP_PASSWORD is missing from .env file", 1)
-
   let config = Config(
     pdsHost: pdsHost,
     handle: handle,
@@ -234,11 +244,9 @@ proc search*(client: var BlueskyClient,keyword: string): seq[JsonNode] =
 
     return searchResults
 
-# Putting the initilization outside so that if the functions of this file are called,
-# Authentication is done first.
-var client = initBlueskyClient()
-client.authenticate()
 when isMainModule:
+  var client = initBlueskyClient()
+  client.authenticate()
 
   let args = commandLineParams()
 
@@ -341,4 +349,3 @@ when isMainModule:
     """
   else:
     echo "[INFO]: No specific action requested. Use --post, --timeline, --user-posts, --user-following or --following-posts. Use --help to find out more."
-  

@@ -4,3 +4,6 @@ tui
 src/bsky/bsky
 src/.DS_Store
 Nimbus.excalidraw
+nimble.develop
+nimble.paths
+nimbledeps
